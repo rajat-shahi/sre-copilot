@@ -77,7 +77,7 @@ Open http://localhost:8501 in your browser and start chatting!
 
 ## Demo
 
-<!-- Add screenshots/GIFs here -->
+<!--  -->
 
 **Example output:**
 ```
