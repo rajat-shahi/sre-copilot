@@ -941,10 +941,19 @@ def render_chat():
         st.error("Agent graph not ready. Please check your configuration.")
         return
 
-    # Show integration warnings
-    if not agent_status["datadog_configured"] and not agent_status["pagerduty_configured"]:
-        st.warning("""
-        **No integrations configured** - SRE Copilot works best with Datadog and/or PagerDuty.
+    # Show integration warnings (optional integrations)
+    missing_integrations = []
+    if not agent_status["datadog_configured"]:
+        missing_integrations.append("Datadog (DATADOG_API_KEY and DATADOG_APP_KEY)")
+    if not agent_status["pagerduty_configured"]:
+        missing_integrations.append("PagerDuty (PAGERDUTY_API_KEY)")
+    
+    if missing_integrations:
+        st.info(f"""
+        **Optional integrations not configured** - The app will work without these, but you can add:
+        - {', '.join(missing_integrations)}
+        
+        Set these as environment variables to enable additional features.
         """)
 
     # Create a container for chat messages with some padding at bottom for input

@@ -53,6 +53,25 @@ class DatadogTools:
         """Ensure API client is initialized."""
         return self._v1_client is not None
 
+    def _handle_error(self, e: Exception, operation: str = "operation") -> dict:
+        """Handle errors and return user-friendly messages, especially for authentication errors."""
+        error_str = str(e)
+        error_lower = error_str.lower()
+        
+        # Check for authentication/authorization errors
+        if "401" in error_str or "unauthorized" in error_lower or "authentication" in error_lower:
+            if not self.api_key or not self.app_key:
+                return {"error": "Datadog API keys not configured. Please add DATADOG_API_KEY and DATADOG_APP_KEY environment variables."}
+            else:
+                return {"error": "Datadog authentication failed. Please check that your API keys are valid."}
+        
+        # Check for permission errors
+        if "403" in error_str or "forbidden" in error_lower:
+            return {"error": "Datadog permission denied. Please check that your API keys have the required permissions."}
+        
+        # Generic error
+        return {"error": f"Failed to {operation}: {error_str}"}
+
     def get_monitors(
         self,
         status_filter: Optional[list[str]] = None,
@@ -117,7 +136,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch monitors: {str(e)}"}
+            return self._handle_error(e, "fetch monitors")
 
     def get_monitor_details(self, monitor_id: int) -> dict:
         """
@@ -156,7 +175,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch monitor details: {str(e)}"}
+            return self._handle_error(e, "fetch monitor details")
 
     def query_metrics(
         self,
@@ -238,7 +257,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to query metrics: {str(e)}"}
+            return self._handle_error(e, "query metrics")
 
     def get_incidents(
         self,
@@ -293,7 +312,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch incidents: {str(e)}"}
+            return self._handle_error(e, "fetch incidents")
 
     def get_dashboards(self, name_filter: Optional[str] = None, limit: int = 20) -> dict:
         """
@@ -338,7 +357,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch dashboards: {str(e)}"}
+            return self._handle_error(e, "fetch dashboards")
 
     def get_apm_services(
         self,
@@ -443,7 +462,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch APM services: {str(e)}"}
+            return self._handle_error(e, "fetch APM services")
 
     def _discover_service_span_name(
         self,
@@ -694,7 +713,7 @@ class DatadogTools:
             return response_data
 
         except Exception as e:
-            return {"error": f"Failed to fetch service stats: {str(e)}"}
+            return self._handle_error(e, "fetch service stats")
 
     def search_traces(
         self,
@@ -782,7 +801,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to search traces: {str(e)}"}
+            return self._handle_error(e, "search traces")
 
     def get_trace_details(
         self,
@@ -874,7 +893,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch trace details: {str(e)}"}
+            return self._handle_error(e, "fetch trace details")
 
     def get_k8s_pods(
         self,
@@ -1030,7 +1049,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch K8s pods: {str(e)}"}
+            return self._handle_error(e, "fetch K8s pods")
 
     def get_k8s_nodes(
         self,
@@ -1168,7 +1187,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch K8s nodes: {str(e)}"}
+            return self._handle_error(e, "fetch K8s nodes")
 
     def get_k8s_deployments(
         self,
@@ -1302,7 +1321,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch K8s deployments: {str(e)}"}
+            return self._handle_error(e, "fetch K8s deployments")
 
     def get_k8s_containers(
         self,
@@ -1443,7 +1462,7 @@ class DatadogTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch K8s containers: {str(e)}"}
+            return self._handle_error(e, "fetch K8s containers")
 
 
 # Tool definitions for Claude

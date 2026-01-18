@@ -37,6 +37,25 @@ class PagerDutyTools:
         """Ensure API session is initialized."""
         return self._session is not None
 
+    def _handle_error(self, e: Exception, operation: str = "operation") -> dict:
+        """Handle errors and return user-friendly messages, especially for authentication errors."""
+        error_str = str(e)
+        error_lower = error_str.lower()
+        
+        # Check for authentication/authorization errors
+        if "401" in error_str or "unauthorized" in error_lower or "authentication" in error_lower:
+            if not self.api_key:
+                return {"error": "PagerDuty API key not configured. Please add PAGERDUTY_API_KEY environment variable."}
+            else:
+                return {"error": "PagerDuty authentication failed. Please check that your API key is valid."}
+        
+        # Check for permission errors
+        if "403" in error_str or "forbidden" in error_lower:
+            return {"error": "PagerDuty permission denied. Please check that your API key has the required permissions."}
+        
+        # Generic error
+        return {"error": f"Failed to {operation}: {error_str}"}
+
     def get_incidents(
         self,
         statuses: Optional[list[str]] = None,
@@ -110,7 +129,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch incidents: {str(e)}"}
+            return self._handle_error(e, "fetch incidents")
 
     def get_incident_details(self, incident_id: str) -> dict:
         """
@@ -186,7 +205,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch incident details: {str(e)}"}
+            return self._handle_error(e, "fetch incident details")
 
     def get_oncall(
         self,
@@ -253,7 +272,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch on-call information: {str(e)}"}
+            return self._handle_error(e, "fetch on-call information")
 
     def get_services(
         self,
@@ -308,7 +327,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch services: {str(e)}"}
+            return self._handle_error(e, "fetch services")
 
     def acknowledge_incident(self, incident_id: str) -> dict:
         """
@@ -341,7 +360,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to acknowledge incident: {str(e)}"}
+            return self._handle_error(e, "acknowledge incident")
 
     def resolve_incident(self, incident_id: str, resolution: Optional[str] = None) -> dict:
         """
@@ -378,7 +397,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to resolve incident: {str(e)}"}
+            return self._handle_error(e, "resolve incident")
 
     def get_recent_alerts(
         self,
@@ -444,7 +463,7 @@ class PagerDutyTools:
             }
 
         except Exception as e:
-            return {"error": f"Failed to fetch alerts: {str(e)}"}
+            return self._handle_error(e, "fetch alerts")
 
 
 # Tool definitions for Claude
