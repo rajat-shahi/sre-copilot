@@ -16,7 +16,7 @@ make run
 
 ## Demo
 
-<!--  -->
+![SRE Copilot Demo](demo.gif)
 
 ## Features
 
